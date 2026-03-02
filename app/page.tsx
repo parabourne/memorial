@@ -6,7 +6,10 @@ import { martyrsData } from '../martyrs';
 export default function SehidlerMemoriali() {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("Hamısı");
-  const [selectedMartyr, setSelectedMartyr] = useState(null);
+  
+  // FIX: Added <any> type so TypeScript allows the object to be stored here
+  const [selectedMartyr, setSelectedMartyr] = useState<any>(null);
+  
   const [showScrollButton, setShowScrollButton] = useState(false);
 
   useEffect(() => {
@@ -25,19 +28,16 @@ export default function SehidlerMemoriali() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // RAYONLAR SİYAHISI (Təhlükəsiz filtrasiya)
   const regions = useMemo(() => {
     if (!martyrsData) return ["Hamısı"];
     const list = Array.from(new Set(martyrsData.map(m => m?.home).filter(Boolean)));
     return ["Hamısı", ...list.sort()];
   }, []);
 
-  // FİLTRLƏNMİŞ DATA (Crash-a qarşı qorunmuş versiya)
   const filteredData = useMemo(() => {
     if (!martyrsData) return [];
     
     return martyrsData.filter(m => {
-      // m?.name?.toLowerCase() istifadə edirik ki, məlumat yoxdursa proqram çökməsin
       const name = m?.name ? String(m.name).toLowerCase() : "";
       const home = m?.home || "";
       const search = searchTerm.toLowerCase().trim();
@@ -78,7 +78,6 @@ export default function SehidlerMemoriali() {
         </div>
       </div>
 
-      {/* HEADER */}
       <header className="bg-white border-b border-slate-200 pt-20 pb-28 text-center relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:20px_20px] opacity-30"></div>
         <div className="max-w-6xl mx-auto px-6 relative">
@@ -92,7 +91,6 @@ export default function SehidlerMemoriali() {
         </div>
       </header>
 
-      {/* FİLTR VƏ AXTARIŞ */}
       <section className="max-w-5xl mx-auto px-4 -mt-14 relative z-10">
         <div className="bg-white rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.05)] border border-slate-100 p-4 flex flex-col md:flex-row gap-4">
           <div className="flex-grow relative">
@@ -114,9 +112,8 @@ export default function SehidlerMemoriali() {
         </div>
       </section>
 
-      {/* SİYAHI */}
       <main className="max-w-6xl mx-auto px-6 py-20 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-        {filteredData.map((m, index) => (
+        {filteredData.map((m: any, index: number) => (
           <div 
             key={index} 
             onClick={() => setSelectedMartyr(m)} 
@@ -140,7 +137,6 @@ export default function SehidlerMemoriali() {
         ))}
       </main>
 
-      {/* YUXARI QALX DÜYMƏSİ */}
       <button 
         onClick={scrollToTop}
         className={`fixed bottom-8 right-8 z-[90] w-14 h-14 bg-slate-900 text-white rounded-full shadow-2xl flex items-center justify-center transition-all duration-300 hover:bg-amber-600 hover:scale-110 active:scale-95 ${
@@ -152,7 +148,6 @@ export default function SehidlerMemoriali() {
         </svg>
       </button>
 
-      {/* MODAL */}
       {selectedMartyr && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
           <div className="bg-white w-full max-w-lg rounded-[3rem] overflow-hidden shadow-2xl relative border border-slate-200">
@@ -197,7 +192,7 @@ export default function SehidlerMemoriali() {
   );
 }
 
-function DetailItem({ label, value, icon }) {
+function DetailItem({ label, value, icon }: any) {
   return (
     <div className="space-y-1">
       <div className="flex items-center gap-2">
