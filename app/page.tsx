@@ -25,15 +25,26 @@ export default function SehidlerMemoriali() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  // RAYONLAR SİYAHISI (Təhlükəsiz filtrasiya)
   const regions = useMemo(() => {
-    const list = Array.from(new Set(martyrsData.map(m => m.home)));
+    if (!martyrsData) return ["Hamısı"];
+    const list = Array.from(new Set(martyrsData.map(m => m?.home).filter(Boolean)));
     return ["Hamısı", ...list.sort()];
   }, []);
 
+  // FİLTRLƏNMİŞ DATA (Crash-a qarşı qorunmuş versiya)
   const filteredData = useMemo(() => {
+    if (!martyrsData) return [];
+    
     return martyrsData.filter(m => {
-      const matchesSearch = m.name.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesTab = activeTab === "Hamısı" || m.home === activeTab;
+      // m?.name?.toLowerCase() istifadə edirik ki, məlumat yoxdursa proqram çökməsin
+      const name = m?.name ? String(m.name).toLowerCase() : "";
+      const home = m?.home || "";
+      const search = searchTerm.toLowerCase().trim();
+
+      const matchesSearch = name.includes(search);
+      const matchesTab = activeTab === "Hamısı" || home === activeTab;
+      
       return matchesSearch && matchesTab;
     });
   }, [searchTerm, activeTab]);
@@ -41,7 +52,7 @@ export default function SehidlerMemoriali() {
   return (
     <div className="min-h-screen bg-[#f8fafc] text-slate-900 font-sans relative">
       
-      {/* ÜST MƏLUMAT BANNERİ (Daha təmiz rənglə) */}
+      {/* ÜST MƏLUMAT BANNERİ */}
       <div className="bg-[#0f172a] text-amber-100/80 py-3 px-6 flex justify-between items-center text-[11px] md:text-xs font-semibold sticky top-0 z-[80] border-b border-amber-900/20">
         <div className="flex items-center gap-3">
           <span className="flex h-2 w-2 relative">
@@ -67,7 +78,7 @@ export default function SehidlerMemoriali() {
         </div>
       </div>
 
-      {/* HEADER (Zərif Qızılı vurğu ilə) */}
+      {/* HEADER */}
       <header className="bg-white border-b border-slate-200 pt-20 pb-28 text-center relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:20px_20px] opacity-30"></div>
         <div className="max-w-6xl mx-auto px-6 relative">
@@ -81,7 +92,7 @@ export default function SehidlerMemoriali() {
         </div>
       </header>
 
-      {/* FİLTR VƏ AXTARIŞ (Slate rəngləri ilə) */}
+      {/* FİLTR VƏ AXTARIŞ */}
       <section className="max-w-5xl mx-auto px-4 -mt-14 relative z-10">
         <div className="bg-white rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.05)] border border-slate-100 p-4 flex flex-col md:flex-row gap-4">
           <div className="flex-grow relative">
@@ -103,7 +114,7 @@ export default function SehidlerMemoriali() {
         </div>
       </section>
 
-      {/* SİYAHI (Kartlarda qırmızı yerinə tünd göy və qızılı) */}
+      {/* SİYAHI */}
       <main className="max-w-6xl mx-auto px-6 py-20 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
         {filteredData.map((m, index) => (
           <div 
@@ -114,16 +125,16 @@ export default function SehidlerMemoriali() {
             <div className="absolute top-0 left-0 w-1 h-0 group-hover:h-full bg-amber-500 transition-all duration-300"></div>
             <div className="flex justify-between items-start mb-6">
               <span className="text-[10px] font-bold bg-amber-50 text-amber-700 px-3 py-1.5 rounded-full border border-amber-100 uppercase tracking-tighter">
-                {m.rank}
+                {m?.rank || "Əsgər"}
               </span>
               <span className="text-amber-600 opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0 text-xs font-bold">
                 Məlumat →
               </span>
             </div>
-            <h2 className="text-xl font-bold text-slate-800 group-hover:text-slate-900 leading-snug">{m.name}</h2>
+            <h2 className="text-xl font-bold text-slate-800 group-hover:text-slate-900 leading-snug">{m?.name}</h2>
             <p className="text-slate-400 text-sm mt-3 flex items-center gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-slate-300"></span>
-              {m.home} rayonu
+              {m?.home} rayonu
             </p>
           </div>
         ))}
@@ -141,36 +152,36 @@ export default function SehidlerMemoriali() {
         </svg>
       </button>
 
-      {/* MODAL (Daha ağır və sanballı rənglər) */}
+      {/* MODAL */}
       {selectedMartyr && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-300">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
           <div className="bg-white w-full max-w-lg rounded-[3rem] overflow-hidden shadow-2xl relative border border-slate-200">
             <div className="bg-slate-900 p-10 text-white relative">
               <button 
                 onClick={() => setSelectedMartyr(null)} 
-                className="absolute top-8 right-8 w-10 h-10 bg-white/5 hover:bg-white/10 rounded-full flex items-center justify-center border border-white/10 transition-colors"
+                className="absolute top-8 right-8 w-10 h-10 bg-white/5 hover:bg-white/10 rounded-full flex items-center justify-center border border-white/10"
               >
                 ✕
               </button>
               <span className="text-amber-400 text-[10px] font-black uppercase tracking-[0.2em] mb-4 block">
-                {selectedMartyr.rank}
+                {selectedMartyr?.rank}
               </span>
               <h2 className="text-3xl font-bold leading-tight tracking-tight">
-                {selectedMartyr.name}
+                {selectedMartyr?.name}
               </h2>
             </div>
 
             <div className="p-10 space-y-8">
               <div className="grid grid-cols-2 gap-8">
-                <DetailItem label="Doğum Tarixi" value={selectedMartyr.birth} icon="📅" />
-                <DetailItem label="Şəhadət Tarixi" value={selectedMartyr.death} icon="⭐" />
-                <DetailItem label="Doğulduğu Yer" value={selectedMartyr.home} icon="📍" />
-                <DetailItem label="Döyüş Meydanı" value={selectedMartyr.location} icon="🛡️" />
+                <DetailItem label="Doğum Tarixi" value={selectedMartyr?.birth} icon="📅" />
+                <DetailItem label="Şəhadət Tarixi" value={selectedMartyr?.death} icon="⭐" />
+                <DetailItem label="Doğulduğu Yer" value={selectedMartyr?.home} icon="📍" />
+                <DetailItem label="Döyüş Meydanı" value={selectedMartyr?.location} icon="🛡️" />
               </div>
               <div className="h-px bg-slate-100 w-full"></div>
               <button 
                 onClick={() => setSelectedMartyr(null)} 
-                className="w-full py-5 bg-slate-900 text-white font-bold rounded-2xl hover:bg-amber-600 transition-all shadow-xl shadow-slate-200 active:scale-[0.98]"
+                className="w-full py-5 bg-slate-900 text-white font-bold rounded-2xl hover:bg-amber-600 transition-all"
               >
                 Ehtiramla bağla
               </button>
@@ -193,7 +204,7 @@ function DetailItem({ label, value, icon }) {
         <span className="opacity-80 text-sm">{icon}</span>
         <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{label}</span>
       </div>
-      <p className="text-slate-800 font-bold pl-7">{value}</p>
+      <p className="text-slate-800 font-bold pl-7">{value || "Məlumat yoxdur"}</p>
     </div>
   );
 }
